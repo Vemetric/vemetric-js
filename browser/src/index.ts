@@ -14,7 +14,7 @@ class Vemetric {
   }
 
   track() {
-    console.log('track');
+    console.log('track2');
   }
 }
 
