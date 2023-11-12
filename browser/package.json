@@ -1,0 +1,18 @@
+{
+  "name": "@vemetric/browser",
+  "version": "0.0.1",
+  "description": "This is the Official tracking library for Vemetric in the Browser",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup",
+    "dev": "npm run build -- --watch"
+  },
+  "keywords": [],
+  "author": "Vemetric",
+  "license": "MIT",
+  "devDependencies": {
+    "tsup": "^7.2.0"
+  }
+}
