@@ -1,5 +1,9 @@
 {
   "name": "@vemetric/browser",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Vemetric/vemetric-js.git"
+  },
   "version": "0.0.1",
   "description": "This is the Official tracking library for Vemetric in the Browser",
   "main": "./dist/index.js",
@@ -17,7 +21,8 @@
     "tsup": "^7.2.0",
     "typescript": "^5.2.2"
   },
+  "private": true,
   "publishConfig": {
-    "registry": "http://localhost:4873"
+    "registry": "https://npm.pkg.github.com"
   }
 }
