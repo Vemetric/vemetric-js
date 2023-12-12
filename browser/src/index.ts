@@ -1,9 +1,9 @@
 type Options = {
-  apiUrl?: string;
+  url?: string;
 };
 
 const DEFAULT_OPTIONS: Options = {
-  apiUrl: 'https://api.vemetric.com',
+  url: 'https://hub.vemetric.com',
 };
 
 class Vemetric {
@@ -14,7 +14,14 @@ class Vemetric {
   }
 
   track() {
-    console.warn('track2');
+    const payload = {
+      o: window.location.href,
+    };
+
+    const req = new XMLHttpRequest();
+    req.open('POST', `${this.options.url}/e`, true);
+    req.setRequestHeader('Content-Type', 'application/json');
+    req.send(JSON.stringify(payload));
   }
 }
 
