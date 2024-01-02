@@ -31,5 +31,8 @@
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
+  },
+  "dependencies": {
+    "nanoid": "^5.0.4"
   }
 }
