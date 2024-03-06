@@ -16,12 +16,13 @@ const DEFAULT_OPTIONS: Options = {
   trackOutboundLinks: true,
 };
 
+const CONTEXT_KEY = '_vmCtx';
 function getContextId() {
-  if (!window._vmCtx) {
-    window._vmCtx = (Math.random() + '').replace('0.', '');
+  if (!sessionStorage.getItem(CONTEXT_KEY)) {
+    sessionStorage.setItem(CONTEXT_KEY, (Math.random() + '').replace('0.', ''));
   }
 
-  return window._vmCtx;
+  return sessionStorage.getItem(CONTEXT_KEY);
 }
 
 function getCurrentUrl() {
