@@ -1,3 +1,9 @@
+declare global {
+  interface Window {
+    _vmCtx: string | null;
+  }
+}
+
 type Options = {
   url?: string;
   trackPageViews?: boolean;
@@ -10,6 +16,14 @@ const DEFAULT_OPTIONS: Options = {
   trackOutboundLinks: true,
 };
 
+function getContextId() {
+  if (!window._vmCtx) {
+    window._vmCtx = (Math.random() + '').replace('0.', '');
+  }
+
+  return window._vmCtx;
+}
+
 function getCurrentUrl() {
   return window.location.href;
 }
@@ -17,6 +31,7 @@ function getCurrentUrl() {
 function getBasicEventData() {
   return {
     url: getCurrentUrl(),
+    contextId: getContextId(),
   };
 }
 
