@@ -47,6 +47,12 @@ function getBasicEventHeaders() {
   };
 }
 
+type UserDataProps = {
+  set?: object;
+  setOnce?: object;
+  unset?: Array<string>;
+};
+
 class Vemetric {
   private options: Options = DEFAULT_OPTIONS;
   private isInitialized = false;
@@ -163,7 +169,7 @@ class Vemetric {
     await this.sendRequest('/r');
   }
 
-  async identify(identifier: string) {
+  async identify(identifier: string, userData?: UserDataProps) {
     this.checkInitialized();
 
     if (this.identifier === identifier) {
@@ -173,6 +179,7 @@ class Vemetric {
     this.identifier = identifier;
     const payload = {
       id: identifier,
+      userData,
     };
 
     try {
