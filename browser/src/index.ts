@@ -80,21 +80,45 @@ class Vemetric {
     }
   }
 
-  private sendRequest(path: string, payload?: Record<string, unknown>, headers?: Record<string, string | undefined>) {
-    const req = new XMLHttpRequest();
-    req.open('POST', `${this.options.url}${path}`, true);
-    req.withCredentials = true;
-    req.setRequestHeader('Content-Type', 'application/json');
-    if (headers) {
-      Object.entries(headers).forEach(([key, value]) => {
-        if (!value) {
-          return;
-        }
+  private async sendRequest(
+    path: string,
+    payload?: Record<string, unknown>,
+    headers?: Record<string, string | undefined>,
+  ) {
+    return new Promise((resolve, reject) => {
+      const req = new XMLHttpRequest();
+      req.open('POST', `${this.options.url}${path}`, true);
+      req.withCredentials = true;
+      req.setRequestHeader('Content-Type', 'application/json');
+      if (headers) {
+        Object.entries(headers).forEach(([key, value]) => {
+          if (!value) {
+            return;
+          }
 
-        req.setRequestHeader(key, value);
-      });
-    }
-    req.send(payload ? JSON.stringify(payload) : undefined);
+          req.setRequestHeader(key, value);
+        });
+      }
+
+      req.onload = function () {
+        if (req.status >= 200 && req.status < 300) {
+          resolve(req.response);
+        } else {
+          reject({
+            status: req.status,
+            statusText: req.statusText,
+          });
+        }
+      };
+      req.onerror = function () {
+        reject({
+          status: req.status,
+          statusText: req.statusText,
+        });
+      };
+
+      req.send(payload ? JSON.stringify(payload) : undefined);
+    });
   }
 
   trackPageView() {
@@ -109,7 +133,7 @@ class Vemetric {
     this.trackEvent('$$pageView');
   }
 
-  trackEvent(name: string, customData?: Record<string, unknown>, beacon?: boolean) {
+  async trackEvent(name: string, customData?: Record<string, unknown>, beacon?: boolean) {
     this.checkInitialized();
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -129,19 +153,17 @@ class Vemetric {
       navigator.sendBeacon(`${this.options.url}/e`, blob);
     } else {
       const headers = getBasicEventHeaders();
-      this.sendRequest('/e', payload, headers);
+      await this.sendRequest('/e', payload, headers);
     }
   }
 
-  resetUser() {
+  async resetUser() {
     this.checkInitialized();
     this.identifier = undefined;
-
-    // TODO: implement on backend side .. would be nice to just delete the cookie on the frontend though?
-    this.sendRequest('/r');
+    await this.sendRequest('/r');
   }
 
-  identify(identifier: string) {
+  async identify(identifier: string) {
     this.checkInitialized();
 
     if (this.identifier === identifier) {
@@ -153,8 +175,11 @@ class Vemetric {
       id: identifier,
     };
 
-    this.sendRequest('/i', payload);
-    // TODO: error handling, reset identifier
+    try {
+      await this.sendRequest('/i', payload);
+    } catch {
+      this.identifier = undefined;
+    }
   }
 
   enableTrackPageViews() {
