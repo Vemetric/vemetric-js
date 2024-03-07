@@ -4,7 +4,7 @@
     "type": "git",
     "url": "https://github.com/Vemetric/vemetric-js.git"
   },
-  "version": "0.0.1-alpha.7",
+  "version": "0.0.1-alpha.8",
   "description": "This is the Official tracking library for Vemetric in the Browser",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
