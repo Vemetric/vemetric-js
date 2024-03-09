@@ -16,13 +16,24 @@ const DEFAULT_OPTIONS: Options = {
   trackOutboundLinks: true,
 };
 
-const CONTEXT_KEY = '_vmCtx';
+const KEY_IDENTIFIER = '_vmId';
+const KEY_DISPLAY_NAME = '_vmDn';
+const KEY_CONTEXT_ID = '_vmCtx';
+
 function getContextId() {
-  if (!sessionStorage.getItem(CONTEXT_KEY)) {
-    sessionStorage.setItem(CONTEXT_KEY, (Math.random() + '').replace('0.', ''));
+  if (!sessionStorage.getItem(KEY_CONTEXT_ID)) {
+    sessionStorage.setItem(KEY_CONTEXT_ID, (Math.random() + '').replace('0.', ''));
   }
 
-  return sessionStorage.getItem(CONTEXT_KEY);
+  return sessionStorage.getItem(KEY_CONTEXT_ID);
+}
+
+function getUserIdentifier() {
+  return localStorage.getItem(KEY_IDENTIFIER) || undefined;
+}
+
+function getUserDisplayName() {
+  return localStorage.getItem(KEY_DISPLAY_NAME) || undefined;
 }
 
 function getCurrentUrl() {
@@ -33,6 +44,8 @@ function getBasicEventData() {
   return {
     url: getCurrentUrl(),
     contextId: getContextId(),
+    identifier: getUserIdentifier(),
+    displayName: getUserDisplayName(),
   };
 }
 
@@ -53,10 +66,15 @@ type UserDataProps = {
   unset?: Array<string>;
 };
 
+type IdentifyProps = {
+  identifier: string;
+  displayName?: string;
+  data?: UserDataProps;
+};
+
 class Vemetric {
   private options: Options = DEFAULT_OPTIONS;
   private isInitialized = false;
-  private identifier?: string;
   private lastViewedPage?: string;
 
   init(options?: Options) {
@@ -163,30 +181,35 @@ class Vemetric {
     }
   }
 
-  async resetUser() {
-    this.checkInitialized();
-    this.identifier = undefined;
-    await this.sendRequest('/r');
-  }
-
-  async identify(identifier: string, userData?: UserDataProps) {
+  async identify({ identifier, displayName, data }: IdentifyProps) {
     this.checkInitialized();
 
-    if (this.identifier === identifier) {
-      return;
+    localStorage.setItem(KEY_IDENTIFIER, identifier);
+    if (displayName) {
+      localStorage.setItem(KEY_DISPLAY_NAME, displayName);
+    } else {
+      localStorage.removeItem(KEY_DISPLAY_NAME);
     }
 
-    this.identifier = identifier;
     const payload = {
-      id: identifier,
-      userData,
+      identifier,
+      displayName,
+      data,
     };
 
     try {
       await this.sendRequest('/i', payload);
     } catch {
-      this.identifier = undefined;
+      localStorage.removeItem(KEY_IDENTIFIER);
+      localStorage.removeItem(KEY_DISPLAY_NAME);
     }
+  }
+
+  async resetUser() {
+    this.checkInitialized();
+    localStorage.removeItem(KEY_IDENTIFIER);
+    localStorage.removeItem(KEY_DISPLAY_NAME);
+    await this.sendRequest('/r');
   }
 
   enableTrackPageViews() {
