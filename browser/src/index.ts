@@ -75,6 +75,7 @@ type IdentifyProps = {
 class Vemetric {
   private options: Options = DEFAULT_OPTIONS;
   private isInitialized = false;
+  private isIdentifying = false;
   private lastViewedPage?: string;
 
   init(options?: Options) {
@@ -183,6 +184,10 @@ class Vemetric {
 
   async identify({ identifier, displayName, data }: IdentifyProps) {
     this.checkInitialized();
+    if (this.isIdentifying) {
+      return;
+    }
+    this.isIdentifying = true;
 
     localStorage.setItem(KEY_IDENTIFIER, identifier);
     if (displayName) {
@@ -202,6 +207,8 @@ class Vemetric {
     } catch {
       localStorage.removeItem(KEY_IDENTIFIER);
       localStorage.removeItem(KEY_DISPLAY_NAME);
+    } finally {
+      this.isIdentifying = false;
     }
   }
 
