@@ -11,9 +11,9 @@ jobs:
       # Setup .npmrc file to publish to GitHub Packages
       - uses: actions/setup-node@v3
         with:
-          node-version: '20.x'
-          registry-url: 'https://npm.pkg.github.com'
-      - run: npm i -g pnpm
+          node-version: "20.x"
+          registry-url: "https://npm.pkg.github.com"
+      - run: npm i -g pnpm@8.6.10
       - run: pnpm i
         working-directory: ./browser
       - run: pnpm publish
