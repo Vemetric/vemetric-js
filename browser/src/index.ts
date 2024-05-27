@@ -4,7 +4,7 @@ declare global {
   }
 }
 
-type Options = {
+export type Options = {
   url?: string;
   trackPageViews?: boolean;
   trackOutboundLinks?: boolean;
