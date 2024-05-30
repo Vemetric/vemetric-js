@@ -1,3 +1,5 @@
+import https from 'https';
+
 export type Options = {
   apiKey: string;
   url?: string;
@@ -8,8 +10,10 @@ const DEFAULT_OPTIONS: Options = {
   url: 'https://hub.vemetric.com',
 };
 
-function getBasicEventHeaders() {
-  return {};
+function getBasicEventHeaders(apiKey: string) {
+  return {
+    'Api-Key': apiKey,
+  };
 }
 
 export class VemetricClient {
@@ -25,51 +29,53 @@ export class VemetricClient {
     headers?: Record<string, string | undefined>,
   ) {
     return new Promise((resolve, reject) => {
-      const req = new XMLHttpRequest();
-      req.open('POST', `${this.options.url}${path}`, true);
-      req.withCredentials = true;
-      req.setRequestHeader('Content-Type', 'application/json');
-      if (headers) {
-        Object.entries(headers).forEach(([key, value]) => {
-          if (!value) {
-            return;
+      const data = payload ? JSON.stringify(payload) : undefined;
+
+      const req = https.request(
+        `${this.options.url}${path}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': data ? Buffer.byteLength(data) : undefined,
+            ...headers,
+          },
+        },
+        (res) => {
+          if (typeof res.statusCode === 'number' && res.statusCode >= 200 && res.statusCode < 300) {
+            resolve(res);
+          } else {
+            reject({
+              status: res.statusCode,
+              statusText: res.statusMessage,
+            });
           }
+        },
+      );
 
-          req.setRequestHeader(key, value);
-        });
-      }
-
-      req.onload = function () {
-        if (req.status >= 200 && req.status < 300) {
-          resolve(req.response);
-        } else {
-          reject({
-            status: req.status,
-            statusText: req.statusText,
-          });
-        }
-      };
-      req.onerror = function () {
+      req.on('error', (e) => {
+        console.error('Error sending request', e);
         reject({
-          status: req.status,
-          statusText: req.statusText,
+          statusText: 'Unknown error',
         });
-      };
+      });
 
-      req.send(payload ? JSON.stringify(payload) : undefined);
+      req.write(data);
+      req.end();
     });
   }
 
-  async trackEvent(name: string, customData?: Record<string, unknown>) {
+  async trackEvent(name: string, userIdentifier: string, customData?: Record<string, unknown>) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const payload: any = {
       name,
+      userIdentifier,
     };
     if (customData) {
       payload.customData = customData;
     }
 
-    const headers = getBasicEventHeaders();
+    const headers = getBasicEventHeaders(this.options.apiKey);
     await this.sendRequest('/e', payload, headers);
   }
 }
