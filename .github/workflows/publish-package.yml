@@ -13,7 +13,7 @@ jobs:
       - run: npm i -g pnpm@8.6.10
       - run: pnpm i
         working-directory: ./browser
-      - run: pnpm publish --provenance --access public
+      - run: pnpm publish --access public
         working-directory: ./browser
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
