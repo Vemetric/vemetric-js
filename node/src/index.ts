@@ -66,16 +66,20 @@ export class VemetricClient {
   }
 
   async trackEvent(name: string, userIdentifier: string, customData?: Record<string, unknown>) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const payload: any = {
-      name,
-      userIdentifier,
-    };
-    if (customData) {
-      payload.customData = customData;
-    }
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const payload: any = {
+        name,
+        userIdentifier,
+      };
+      if (customData) {
+        payload.customData = customData;
+      }
 
-    const headers = getBasicEventHeaders(this.options.apiKey);
-    await this.sendRequest('/e', payload, headers);
+      const headers = getBasicEventHeaders(this.options.apiKey);
+      await this.sendRequest('/e', payload, headers);
+    } catch (error) {
+      console.error('Error tracking Vemetric event', error);
+    }
   }
 }
