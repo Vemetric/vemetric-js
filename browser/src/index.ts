@@ -72,6 +72,12 @@ type IdentifyProps = {
   data?: UserDataProps;
 };
 
+type EventProps = {
+  eventData?: Record<string, unknown>;
+  userData?: UserDataProps;
+  beacon?: boolean;
+};
+
 class Vemetric {
   private options: Options = DEFAULT_OPTIONS;
   private isInitialized = false;
@@ -87,7 +93,7 @@ class Vemetric {
     this.isInitialized = true;
 
     window.addEventListener('beforeunload', () => {
-      this.trackEvent('$$pageLeave', undefined, true);
+      this.trackEvent('$$pageLeave', { beacon: true });
     });
 
     if (this.options.trackPageViews) {
@@ -158,16 +164,20 @@ class Vemetric {
     this.trackEvent('$$pageView');
   }
 
-  async trackEvent(name: string, customData?: Record<string, unknown>, beacon?: boolean) {
+  async trackEvent(eventName: string, props: EventProps = {}) {
+    const { eventData, userData, beacon = false } = props;
     this.checkInitialized();
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const payload: any = {
       ...getBasicEventData(),
-      name,
+      name: eventName,
     };
-    if (customData) {
-      payload.customData = customData;
+    if (eventData) {
+      payload.customData = eventData;
+    }
+    if (userData) {
+      payload.userData = userData;
     }
 
     if (beacon) {
@@ -248,7 +258,7 @@ class Vemetric {
 
       const url = new URL(href, getCurrentUrl());
       if (url.origin !== window.location.origin) {
-        this.trackEvent('$$outboundLink', { href }, true);
+        this.trackEvent('$$outboundLink', { eventData: { href }, beacon: true });
       }
     });
   }

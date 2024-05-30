@@ -16,6 +16,19 @@ function getBasicEventHeaders(apiKey: string) {
   };
 }
 
+type UserDataProps = {
+  set?: object;
+  setOnce?: object;
+  unset?: Array<string>;
+};
+
+type EventProps = {
+  eventName: string;
+  userIdentifier: string;
+  eventData?: Record<string, unknown>;
+  userData?: UserDataProps;
+};
+
 export class VemetricClient {
   private options: Options = DEFAULT_OPTIONS;
 
@@ -65,15 +78,18 @@ export class VemetricClient {
     });
   }
 
-  async trackEvent(name: string, userIdentifier: string, customData?: Record<string, unknown>) {
+  async trackEvent({ eventName, eventData, userIdentifier, userData }: EventProps) {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const payload: any = {
-        name,
+        name: eventName,
         userIdentifier,
       };
-      if (customData) {
-        payload.customData = customData;
+      if (eventData) {
+        payload.customData = eventData;
+      }
+      if (userData) {
+        payload.userData = userData;
       }
 
       const headers = getBasicEventHeaders(this.options.apiKey);
