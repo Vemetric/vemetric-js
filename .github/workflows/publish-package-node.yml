@@ -10,10 +10,8 @@ jobs:
         with:
           node-version: "20.x"
           registry-url: "https://registry.npmjs.org"
-      - run: npm i -g pnpm@8.6.10
+      - run: npm i -g pnpm@9.1.3
       - run: pnpm i
-        working-directory: ./node
-      - run: git diff
         working-directory: ./node
       - run: pnpm publish --access public
         working-directory: ./node
