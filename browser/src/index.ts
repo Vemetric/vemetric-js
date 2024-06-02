@@ -93,7 +93,7 @@ class Vemetric {
     this.isInitialized = true;
 
     window.addEventListener('beforeunload', () => {
-      this.trackEvent('$$pageLeave', { beacon: true });
+      this.trackPageLeave();
     });
 
     if (this.options.trackPageViews) {
@@ -162,6 +162,20 @@ class Vemetric {
     this.lastViewedPage = currentUrl;
 
     this.trackEvent('$$pageView');
+  }
+
+  trackPageLeave() {
+    this.checkInitialized();
+
+    const payload = {
+      ...getBasicEventData(),
+    };
+
+    const headers = {
+      type: 'application/json',
+    };
+    const blob = new Blob([JSON.stringify(payload)], headers);
+    navigator.sendBeacon(`${this.options.url}/l`, blob);
   }
 
   async trackEvent(eventName: string, props: EventProps = {}) {
