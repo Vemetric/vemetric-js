@@ -1,11 +1,16 @@
 import { vemetric, type Options } from './index';
 
 const scriptElement = document.currentScript as HTMLScriptElement;
-const options: Options = {};
+const options: Options = { token: '' };
 if (scriptElement) {
-  const url = scriptElement.getAttribute('data-url');
-  if (url) {
-    options.url = url;
+  const token = scriptElement.getAttribute('data-token');
+  if (token) {
+    options.token = token;
+  }
+
+  const host = scriptElement.getAttribute('data-host');
+  if (host) {
+    options.host = host;
   }
 }
 

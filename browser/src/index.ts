@@ -5,13 +5,15 @@ declare global {
 }
 
 export type Options = {
-  url?: string;
+  token: string;
+  host?: string;
   trackPageViews?: boolean;
   trackOutboundLinks?: boolean;
 };
 
 const DEFAULT_OPTIONS: Options = {
-  url: 'https://hub.vemetric.com',
+  token: '',
+  host: 'https://hub.vemetric.com',
   trackPageViews: true,
   trackOutboundLinks: true,
 };
@@ -46,6 +48,12 @@ function getBasicEventData() {
     contextId: getContextId(),
     identifier: getUserIdentifier(),
     displayName: getUserDisplayName(),
+  };
+}
+
+function getBaseHeaders(token: string) {
+  return {
+    Token: token,
   };
 }
 
@@ -84,9 +92,13 @@ class Vemetric {
   private isIdentifying = false;
   private lastViewedPage?: string;
 
-  init(options?: Options) {
+  init(options: Options) {
     if (this.isInitialized) {
       return;
+    }
+
+    if (!options.token || options.token.length < 3) {
+      throw new Error('Please provide your Public Token.');
     }
 
     this.options = { ...DEFAULT_OPTIONS, ...options };
@@ -114,22 +126,23 @@ class Vemetric {
   private async sendRequest(
     path: string,
     payload?: Record<string, unknown>,
-    headers?: Record<string, string | undefined>,
+    _headers?: Record<string, string | undefined>,
   ) {
     return new Promise((resolve, reject) => {
       const req = new XMLHttpRequest();
-      req.open('POST', `${this.options.url}${path}`, true);
+      req.open('POST', `${this.options.host}${path}`, true);
       req.withCredentials = true;
       req.setRequestHeader('Content-Type', 'application/json');
-      if (headers) {
-        Object.entries(headers).forEach(([key, value]) => {
-          if (!value) {
-            return;
-          }
 
-          req.setRequestHeader(key, value);
-        });
-      }
+      const baseHeaders = getBaseHeaders(this.options.token);
+      const headers = { ...baseHeaders, ..._headers };
+      Object.entries(headers).forEach(([key, value]) => {
+        if (!value) {
+          return;
+        }
+
+        req.setRequestHeader(key, value);
+      });
 
       req.onload = function () {
         if (req.status >= 200 && req.status < 300) {
@@ -174,8 +187,8 @@ class Vemetric {
     const headers = {
       type: 'application/json',
     };
-    const blob = new Blob([JSON.stringify(payload)], headers);
-    navigator.sendBeacon(`${this.options.url}/l`, blob);
+    const blob = new Blob([JSON.stringify({ ...payload, ...getBaseHeaders(this.options.token) })], headers);
+    navigator.sendBeacon(`${this.options.host}/l`, blob);
   }
 
   async trackEvent(eventName: string, props: EventProps = {}) {
@@ -198,8 +211,8 @@ class Vemetric {
       const headers = {
         type: 'application/json',
       };
-      const blob = new Blob([JSON.stringify(payload)], headers);
-      navigator.sendBeacon(`${this.options.url}/e`, blob);
+      const blob = new Blob([JSON.stringify({ ...payload, ...getBaseHeaders(this.options.token) })], headers);
+      navigator.sendBeacon(`${this.options.host}/e`, blob);
     } else {
       const headers = getBasicEventHeaders();
       await this.sendRequest('/e', payload, headers);

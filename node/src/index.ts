@@ -1,18 +1,18 @@
 import https from 'https';
 
 export type Options = {
-  apiKey: string;
-  url?: string;
+  token: string;
+  host?: string;
 };
 
 const DEFAULT_OPTIONS: Options = {
-  apiKey: '',
-  url: 'https://hub.vemetric.com',
+  token: '',
+  host: 'https://hub.vemetric.com',
 };
 
-function getBasicEventHeaders(apiKey: string) {
+function getBasicEventHeaders(token: string) {
   return {
-    'Api-Key': apiKey,
+    Token: token,
   };
 }
 
@@ -33,6 +33,10 @@ export class VemetricClient {
   private options: Options = DEFAULT_OPTIONS;
 
   constructor(options: Options) {
+    if (!options.token || options.token.length < 3) {
+      throw new Error('Please provide your Public Token.');
+    }
+
     this.options = { ...DEFAULT_OPTIONS, ...options };
   }
 
@@ -45,7 +49,7 @@ export class VemetricClient {
       const data = payload ? JSON.stringify(payload) : undefined;
 
       const req = https.request(
-        `${this.options.url}${path}`,
+        `${this.options.host}${path}`,
         {
           method: 'POST',
           headers: {
@@ -92,7 +96,7 @@ export class VemetricClient {
         payload.userData = userData;
       }
 
-      const headers = getBasicEventHeaders(this.options.apiKey);
+      const headers = getBasicEventHeaders(this.options.token);
       await this.sendRequest('/e', payload, headers);
     } catch (error) {
       console.error('Error tracking Vemetric event', error);
