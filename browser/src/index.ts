@@ -1,3 +1,5 @@
+import { retry } from './retry';
+
 declare global {
   interface Window {
     _vmCtx: string | null;
@@ -247,6 +249,17 @@ class Vemetric {
     } finally {
       this.isIdentifying = false;
     }
+  }
+
+  updateUserData(data: UserDataProps) {
+    this.checkInitialized();
+
+    retry({
+      interval: 1000,
+      maxRetries: 5,
+      shouldRetry: () => this.isIdentifying,
+      callback: () => this.sendRequest('/u', { data }),
+    });
   }
 
   async resetUser() {
