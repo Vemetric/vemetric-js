@@ -251,7 +251,7 @@ class Vemetric {
     }
   }
 
-  updateUserData(data: UserDataProps) {
+  updateUser(data: UserDataProps) {
     this.checkInitialized();
 
     retry({
