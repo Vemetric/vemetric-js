@@ -10,7 +10,7 @@ const DEFAULT_OPTIONS: Options = {
   host: 'https://hub.vemetric.com',
 };
 
-function getBasicEventHeaders(token: string) {
+function getBasicRequestHeaders(token: string) {
   return {
     Token: token,
   };
@@ -27,6 +27,11 @@ type EventProps = {
   userIdentifier: string;
   eventData?: Record<string, unknown>;
   userData?: UserDataProps;
+};
+
+type UserUpdateProps = {
+  userIdentifier: string;
+  userData: UserDataProps;
 };
 
 export class VemetricClient {
@@ -96,10 +101,24 @@ export class VemetricClient {
         payload.userData = userData;
       }
 
-      const headers = getBasicEventHeaders(this.options.token);
+      const headers = getBasicRequestHeaders(this.options.token);
       await this.sendRequest('/e', payload, headers);
     } catch (error) {
       console.error('Error tracking Vemetric event', error);
+    }
+  }
+
+  async updateUser({ userIdentifier, userData }: UserUpdateProps) {
+    try {
+      const payload = {
+        userIdentifier,
+        ...userData,
+      };
+
+      const headers = getBasicRequestHeaders(this.options.token);
+      await this.sendRequest('/u', payload, headers);
+    } catch (error) {
+      console.error('Error updating Vemetric user', error);
     }
   }
 }
