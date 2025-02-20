@@ -11,6 +11,7 @@ export type Options = {
   host?: string;
   trackPageViews?: boolean;
   trackOutboundLinks?: boolean;
+  allowCookies?: boolean;
 };
 
 const DEFAULT_OPTIONS: Options = {
@@ -18,6 +19,7 @@ const DEFAULT_OPTIONS: Options = {
   host: 'https://hub.vemetric.com',
   trackPageViews: true,
   trackOutboundLinks: true,
+  allowCookies: false,
 };
 
 const KEY_IDENTIFIER = '_vmId';
@@ -53,9 +55,10 @@ function getBasicEventData() {
   };
 }
 
-function getBaseHeaders(token: string) {
+function getBaseHeaders(options: Options) {
   return {
-    Token: token,
+    Token: options.token,
+    'Allow-Cookies': String(Boolean(options.allowCookies)),
   };
 }
 
@@ -136,7 +139,7 @@ class Vemetric {
       req.withCredentials = true;
       req.setRequestHeader('Content-Type', 'application/json');
 
-      const baseHeaders = getBaseHeaders(this.options.token);
+      const baseHeaders = getBaseHeaders(this.options);
       const headers = { ...baseHeaders, ..._headers };
       Object.entries(headers).forEach(([key, value]) => {
         if (!value) {
@@ -189,7 +192,7 @@ class Vemetric {
     const headers = {
       type: 'application/json',
     };
-    const blob = new Blob([JSON.stringify({ ...payload, ...getBaseHeaders(this.options.token) })], headers);
+    const blob = new Blob([JSON.stringify({ ...payload, ...getBaseHeaders(this.options) })], headers);
     navigator.sendBeacon(`${this.options.host}/l`, blob);
   }
 
@@ -213,7 +216,7 @@ class Vemetric {
       const headers = {
         type: 'application/json',
       };
-      const blob = new Blob([JSON.stringify({ ...payload, ...getBaseHeaders(this.options.token) })], headers);
+      const blob = new Blob([JSON.stringify({ ...payload, ...getBaseHeaders(this.options) })], headers);
       navigator.sendBeacon(`${this.options.host}/e`, blob);
     } else {
       const headers = getBasicEventHeaders();
