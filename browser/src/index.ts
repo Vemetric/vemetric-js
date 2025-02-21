@@ -35,11 +35,11 @@ function getContextId() {
 }
 
 function getUserIdentifier() {
-  return localStorage.getItem(KEY_IDENTIFIER) || undefined;
+  return sessionStorage.getItem(KEY_IDENTIFIER) || undefined;
 }
 
 function getUserDisplayName() {
-  return localStorage.getItem(KEY_DISPLAY_NAME) || undefined;
+  return sessionStorage.getItem(KEY_DISPLAY_NAME) || undefined;
 }
 
 function getCurrentUrl() {
@@ -83,6 +83,7 @@ type IdentifyProps = {
   identifier: string;
   displayName?: string;
   data?: UserDataProps;
+  allowCookies?: boolean;
 };
 
 type EventProps = {
@@ -224,18 +225,18 @@ class Vemetric {
     }
   }
 
-  async identify({ identifier, displayName, data }: IdentifyProps) {
+  async identify({ identifier, displayName, data, allowCookies: _allowCookies }: IdentifyProps) {
     this.checkInitialized();
     if (this.isIdentifying) {
       return;
     }
     this.isIdentifying = true;
 
-    localStorage.setItem(KEY_IDENTIFIER, identifier);
+    sessionStorage.setItem(KEY_IDENTIFIER, identifier);
     if (displayName) {
-      localStorage.setItem(KEY_DISPLAY_NAME, displayName);
+      sessionStorage.setItem(KEY_DISPLAY_NAME, displayName);
     } else {
-      localStorage.removeItem(KEY_DISPLAY_NAME);
+      sessionStorage.removeItem(KEY_DISPLAY_NAME);
     }
 
     const payload = {
@@ -245,10 +246,12 @@ class Vemetric {
     };
 
     try {
-      await this.sendRequest('/i', payload);
+      await this.sendRequest('/i', payload, {
+        'Allow-Cookies': String(this.options.allowCookies || _allowCookies || false),
+      });
     } catch {
-      localStorage.removeItem(KEY_IDENTIFIER);
-      localStorage.removeItem(KEY_DISPLAY_NAME);
+      sessionStorage.removeItem(KEY_IDENTIFIER);
+      sessionStorage.removeItem(KEY_DISPLAY_NAME);
     } finally {
       this.isIdentifying = false;
     }
@@ -267,8 +270,8 @@ class Vemetric {
 
   async resetUser() {
     this.checkInitialized();
-    localStorage.removeItem(KEY_IDENTIFIER);
-    localStorage.removeItem(KEY_DISPLAY_NAME);
+    sessionStorage.removeItem(KEY_IDENTIFIER);
+    sessionStorage.removeItem(KEY_DISPLAY_NAME);
     await this.sendRequest('/r');
   }
 
