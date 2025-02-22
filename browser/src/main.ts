@@ -12,6 +12,11 @@ if (scriptElement) {
   if (host) {
     options.host = host;
   }
+
+  const allowCookies = scriptElement.getAttribute('data-allow-cookies');
+  if (allowCookies) {
+    options.allowCookies = allowCookies === 'true';
+  }
 }
 
 vemetric.init(options);
