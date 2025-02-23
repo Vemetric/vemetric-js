@@ -32,6 +32,7 @@ async function uploadObject(params) {
         Bucket: bucket,
         Key: key,
         Body: body,
+        ContentType: 'text/javascript',
       })
       .promise();
   } catch (error) {
