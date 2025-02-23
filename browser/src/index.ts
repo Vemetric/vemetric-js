@@ -56,9 +56,24 @@ function getBasicEventData() {
 }
 
 function getBaseHeaders(options: Options) {
+  let hostHeader: string | undefined = undefined;
+  if (options.host && options.host !== DEFAULT_OPTIONS.host) {
+    hostHeader = options.host;
+
+    if (hostHeader?.startsWith('/')) {
+      hostHeader = window.location.host;
+    } else {
+      hostHeader = new URL(options.host).host;
+      if (hostHeader.startsWith('www.')) {
+        hostHeader = hostHeader.slice(4);
+      }
+    }
+  }
+
   return {
     Token: options.token,
     'Allow-Cookies': String(Boolean(options.allowCookies)),
+    'V-Host': hostHeader,
   };
 }
 
