@@ -17,6 +17,15 @@ if (scriptElement) {
   if (allowCookies) {
     options.allowCookies = allowCookies === 'true';
   }
+
+  const maskPaths = scriptElement.getAttribute('data-mask-paths');
+  if (maskPaths) {
+    try {
+      options.maskPaths = JSON.parse(maskPaths);
+    } catch (e) {
+      console.warn('Failed to parse mask paths:', e);
+    }
+  }
 }
 
 vemetric.init(options);

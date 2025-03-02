@@ -4,7 +4,7 @@
     "type": "git",
     "url": "https://github.com/Vemetric/vemetric-js.git"
   },
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "This is the Official tracking library for Vemetric in the Browser",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -14,7 +14,9 @@
     "build": "tsup",
     "dev": "npm run build -- --watch",
     "lint": "eslint --max-warnings=0 --ext .js,.jsx,.ts,.tsx . --fix",
-    "publish-cdn": "npm run build && node publish-cdn.mjs"
+    "publish-cdn": "npm run build && node publish-cdn.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "keywords": [],
   "author": "Vemetric",
@@ -27,8 +29,10 @@
     "eslint-plugin-jsx-a11y": "^6.8.0",
     "eslint-plugin-prettier": "^5.0.1",
     "eslint-plugin-unused-imports": "^3.0.0",
+    "jsdom": "^26.0.0",
     "prettier": "^3.1.0",
     "tsup": "^7.2.0",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "vitest": "^3.0.7"
   }
 }

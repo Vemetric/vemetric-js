@@ -13,6 +13,8 @@ jobs:
       - run: npm i -g pnpm@9.1.3
       - run: pnpm i
         working-directory: ./browser
+      - run: pnpm test
+        working-directory: ./browser
       - run: pnpm publish --access public
         working-directory: ./browser
         env:

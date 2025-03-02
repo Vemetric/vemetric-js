@@ -12,6 +12,7 @@ export type Options = {
   trackPageViews?: boolean;
   trackOutboundLinks?: boolean;
   allowCookies?: boolean;
+  maskPaths?: string[];
 };
 
 const DEFAULT_OPTIONS: Options = {
@@ -20,6 +21,7 @@ const DEFAULT_OPTIONS: Options = {
   trackPageViews: true,
   trackOutboundLinks: true,
   allowCookies: false,
+  maskPaths: [],
 };
 
 const KEY_IDENTIFIER = '_vmId';
@@ -42,13 +44,34 @@ function getUserDisplayName() {
   return sessionStorage.getItem(KEY_DISPLAY_NAME) || undefined;
 }
 
+function applyUrlMasking(url: string, maskPaths: string[] = []): string {
+  if (maskPaths.length === 0) {
+    return url;
+  }
+
+  const urlObj = new URL(url);
+  const pathname = urlObj.pathname;
+
+  const regexMaskPaths = maskPaths.map((url) => new RegExp(`^${url.replace(/\*/g, '[^/]+')}$`));
+  for (let i = 0; i < regexMaskPaths.length; i++) {
+    if (regexMaskPaths[i].test(pathname)) {
+      urlObj.pathname = maskPaths[i];
+      return urlObj.toString();
+    }
+  }
+  return url;
+}
+
 function getCurrentUrl() {
   return window.location.href;
 }
 
-function getBasicEventData() {
+function getBasicEventData(options?: Options) {
+  const url = getCurrentUrl();
+  const maskedUrl = applyUrlMasking(url, options?.maskPaths);
+
   return {
-    url: getCurrentUrl(),
+    url: maskedUrl,
     contextId: getContextId(),
     identifier: getUserIdentifier(),
     displayName: getUserDisplayName(),
@@ -123,6 +146,7 @@ class Vemetric {
     }
 
     this.options = { ...DEFAULT_OPTIONS, ...options };
+    this.options.maskPaths?.sort((a, b) => b.length - a.length);
     this.isInitialized = true;
 
     window.addEventListener('beforeunload', () => {
@@ -186,7 +210,7 @@ class Vemetric {
     });
   }
 
-  trackPageView() {
+  async trackPageView() {
     this.checkInitialized();
 
     const currentUrl = getCurrentUrl();
@@ -195,14 +219,14 @@ class Vemetric {
     }
     this.lastViewedPage = currentUrl;
 
-    this.trackEvent('$$pageView');
+    await this.trackEvent('$$pageView');
   }
 
   trackPageLeave() {
     this.checkInitialized();
 
     const payload = {
-      ...getBasicEventData(),
+      ...getBasicEventData(this.options),
     };
 
     const headers = {
@@ -218,7 +242,7 @@ class Vemetric {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const payload: any = {
-      ...getBasicEventData(),
+      ...getBasicEventData(this.options),
       name: eventName,
     };
     if (eventData) {
