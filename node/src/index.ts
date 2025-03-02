@@ -34,7 +34,7 @@ type UserUpdateProps = {
   userData: UserDataProps;
 };
 
-export class VemetricClient {
+export class Vemetric {
   private options: Options = DEFAULT_OPTIONS;
 
   constructor(options: Options) {
