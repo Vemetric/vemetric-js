@@ -20,8 +20,10 @@ describe('URL Masking', () => {
   });
 
   const mockUrl = (url: string) => {
+    const urlObj = new URL(url);
     window.location = {
       ...mockLocation,
+      hostname: urlObj.hostname,
       href: url,
     };
   };
