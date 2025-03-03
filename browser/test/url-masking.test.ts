@@ -24,7 +24,6 @@ describe('URL Masking', () => {
     window.location = {
       ...mockLocation,
       hostname: urlObj.hostname,
-      navigator: {},
       href: url,
     };
   };

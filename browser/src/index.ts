@@ -184,7 +184,7 @@ class Vemetric {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const anyWindow = window as any;
-    if (anyWindow._phantom || anyWindow.__nightmare || window.navigator.webdriver || anyWindow.Cypress) {
+    if (anyWindow._phantom || anyWindow.__nightmare || window.navigator?.webdriver || anyWindow.Cypress) {
       return true;
     }
 
