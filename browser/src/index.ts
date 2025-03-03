@@ -350,6 +350,14 @@ class Vemetric {
   enableTrackPageViews() {
     const pageView = () => this.trackPageView();
 
+    const originalReplaceState = window.history.replaceState;
+    if (originalReplaceState) {
+      window.history.replaceState = function (...args) {
+        originalReplaceState.apply(this, args);
+        pageView();
+      };
+    }
+
     const originalPushState = window.history.pushState;
     if (originalPushState) {
       window.history.pushState = function (...args) {
