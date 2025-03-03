@@ -66,6 +66,11 @@ function getCurrentUrl() {
   return window.location.href;
 }
 
+function isLocalhost() {
+  const hostname = window.location.hostname;
+  return hostname === 'localhost' || hostname === '127.0.0.1' || hostname.startsWith('localhost:');
+}
+
 function getBasicEventData(options?: Options) {
   const url = getCurrentUrl();
   const maskedUrl = applyUrlMasking(url, options?.maskPaths);
@@ -145,6 +150,10 @@ class Vemetric {
       throw new Error('Please provide your Public Token.');
     }
 
+    if (isLocalhost()) {
+      console.warn('Vemetric is ignoring requests because it is running on localhost.');
+    }
+
     this.options = { ...DEFAULT_OPTIONS, ...options };
     this.options.maskPaths?.sort((a, b) => b.length - a.length);
     this.isInitialized = true;
@@ -168,11 +177,29 @@ class Vemetric {
     }
   }
 
+  private ignoreRequest() {
+    if (isLocalhost() || window.location.protocol === 'file:') {
+      return true;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const anyWindow = window as any;
+    if (anyWindow._phantom || anyWindow.__nightmare || window.navigator.webdriver || anyWindow.Cypress) {
+      return true;
+    }
+
+    return false;
+  }
+
   private async sendRequest(
     path: string,
     payload?: Record<string, unknown>,
     _headers?: Record<string, string | undefined>,
   ) {
+    if (this.ignoreRequest()) {
+      return;
+    }
+
     return new Promise((resolve, reject) => {
       const req = new XMLHttpRequest();
       req.open('POST', `${this.options.host}${path}`, true);
@@ -210,6 +237,20 @@ class Vemetric {
     });
   }
 
+  private sendBeacon(path: string, payload?: Record<string, unknown>, _headers?: Record<string, string | undefined>) {
+    if (this.ignoreRequest()) {
+      return;
+    }
+
+    const baseHeaders = getBaseHeaders(this.options);
+    const headers = { ...baseHeaders, ..._headers };
+
+    const blob = new Blob([JSON.stringify({ ...payload, ...headers })], {
+      type: 'application/json',
+    });
+    navigator.sendBeacon(`${this.options.host}${path}`, blob);
+  }
+
   async trackPageView() {
     this.checkInitialized();
 
@@ -229,11 +270,7 @@ class Vemetric {
       ...getBasicEventData(this.options),
     };
 
-    const headers = {
-      type: 'application/json',
-    };
-    const blob = new Blob([JSON.stringify({ ...payload, ...getBaseHeaders(this.options) })], headers);
-    navigator.sendBeacon(`${this.options.host}/l`, blob);
+    this.sendBeacon('/l', payload);
   }
 
   async trackEvent(eventName: string, props: EventProps = {}) {
@@ -253,11 +290,7 @@ class Vemetric {
     }
 
     if (beacon) {
-      const headers = {
-        type: 'application/json',
-      };
-      const blob = new Blob([JSON.stringify({ ...payload, ...getBaseHeaders(this.options) })], headers);
-      navigator.sendBeacon(`${this.options.host}/e`, blob);
+      this.sendBeacon('/e', payload);
     } else {
       const headers = getBasicEventHeaders();
       await this.sendRequest('/e', payload, headers);
