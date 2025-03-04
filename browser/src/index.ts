@@ -24,6 +24,7 @@ const DEFAULT_OPTIONS: Options = {
   maskPaths: [],
 };
 
+const DATA_ATTRIBUTE_EVENT = 'data-vmtrc';
 const KEY_IDENTIFIER = '_vmId';
 const KEY_DISPLAY_NAME = '_vmDn';
 const KEY_CONTEXT_ID = '_vmCtx';
@@ -169,6 +170,37 @@ class Vemetric {
     if (this.options.trackOutboundLinks) {
       this.enableTrackOutboundLinks();
     }
+
+    this.enableDataAttributeTracking();
+  }
+
+  private enableDataAttributeTracking() {
+    document.addEventListener('click', (event) => {
+      const element = event.target as HTMLElement;
+      if (!element || !element.getAttribute) {
+        return;
+      }
+
+      const eventName = element.getAttribute(DATA_ATTRIBUTE_EVENT);
+      if (!eventName) {
+        return;
+      }
+
+      // Collect custom data from other data attributes
+      const customData: Record<string, string> = {};
+      for (const attr of element.attributes) {
+        if (attr.name.startsWith(`${DATA_ATTRIBUTE_EVENT}-`)) {
+          const key = attr.name.slice(`${DATA_ATTRIBUTE_EVENT}-`.length);
+          if (key.length === 0 || !attr.value) {
+            continue;
+          }
+
+          customData[key] = attr.value;
+        }
+      }
+
+      this.trackEvent(eventName, { eventData: customData });
+    });
   }
 
   private checkInitialized() {
@@ -282,10 +314,10 @@ class Vemetric {
       ...getBasicEventData(this.options),
       name: eventName,
     };
-    if (eventData) {
+    if (eventData && Object.keys(eventData).length > 0) {
       payload.customData = eventData;
     }
-    if (userData) {
+    if (userData && Object.keys(userData).length > 0) {
       payload.userData = userData;
     }
 
@@ -373,7 +405,7 @@ class Vemetric {
   enableTrackOutboundLinks() {
     document.addEventListener('click', (event) => {
       const target = event.target as HTMLElement;
-      if (target.tagName !== 'A') {
+      if (!target || target.tagName !== 'A') {
         return;
       }
 
