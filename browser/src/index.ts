@@ -177,7 +177,7 @@ class Vemetric {
   private enableDataAttributeTracking() {
     document.addEventListener('click', (event) => {
       const target = event.target;
-      if (!(target instanceof HTMLElement)) {
+      if (!(target instanceof HTMLElement) || !target.closest) {
         return;
       }
 
