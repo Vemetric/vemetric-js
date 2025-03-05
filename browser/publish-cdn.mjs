@@ -49,7 +49,7 @@ const { version } = JSON.parse(readFileSync(join(__dirname, 'package.json'), 'ut
 const distDir = join(__dirname, 'dist');
 
 const mainJs = readFileSync(join(distDir, 'main.js'), 'utf8');
-const versionedMainJs = `/* ${version} */${mainJs}`;
+const versionedMainJs = `/*${version}*/${mainJs}`;
 
 await uploadObject({
   key: `main.js`,
