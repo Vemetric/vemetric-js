@@ -169,12 +169,15 @@ class Vemetric {
       this.trackPageView();
       this.enableTrackPageViews();
     }
-    if (this.options.trackOutboundLinks) {
-      this.enableTrackOutboundLinks();
-    }
-    if (this.options.trackDataAttributes) {
-      this.enableTrackDataAttributes();
-    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (this.options.trackOutboundLinks) {
+        this.enableTrackOutboundLinks();
+      }
+      if (this.options.trackDataAttributes) {
+        this.enableTrackDataAttributes();
+      }
+    });
   }
 
   private enableTrackDataAttributes() {
