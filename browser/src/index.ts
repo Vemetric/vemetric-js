@@ -169,32 +169,29 @@ class Vemetric {
       this.trackPageView();
       this.enableTrackPageViews();
     }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      if (this.options.trackOutboundLinks) {
-        this.enableTrackOutboundLinks();
-      }
-      if (this.options.trackDataAttributes) {
-        this.enableTrackDataAttributes();
-      }
-    });
+    if (this.options.trackOutboundLinks) {
+      this.enableTrackOutboundLinks();
+    }
+    if (this.options.trackDataAttributes) {
+      this.enableTrackDataAttributes();
+    }
   }
 
   private enableTrackDataAttributes() {
     document.addEventListener('click', (event) => {
       const target = event.target;
       if (!(target instanceof HTMLElement) || !target.closest) {
-        return true;
+        return;
       }
 
       const element = target.closest(`[${DATA_ATTRIBUTE_EVENT}]`);
       if (!element) {
-        return true;
+        return;
       }
 
       const eventName = element.getAttribute(DATA_ATTRIBUTE_EVENT);
       if (!eventName) {
-        return true;
+        return;
       }
 
       // Collect custom data from other data attributes
@@ -211,7 +208,6 @@ class Vemetric {
       }
 
       this.trackEvent(eventName, { eventData: customData });
-      return true;
     });
   }
 
@@ -418,19 +414,18 @@ class Vemetric {
     document.addEventListener('click', (event) => {
       const target = event.target as HTMLElement;
       if (!target || target.tagName !== 'A') {
-        return true;
+        return;
       }
 
       const href = target.getAttribute('href');
       if (!href) {
-        return true;
+        return;
       }
 
       const url = new URL(href, getCurrentUrl());
       if (url.origin !== window.location.origin) {
         this.trackEvent('$$outboundLink', { eventData: { href }, beacon: true });
       }
-      return true;
     });
   }
 }
