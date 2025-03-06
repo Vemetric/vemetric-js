@@ -11,6 +11,7 @@ export type Options = {
   host?: string;
   trackPageViews?: boolean;
   trackOutboundLinks?: boolean;
+  trackDataAttributes?: boolean;
   allowCookies?: boolean;
   maskPaths?: string[];
 };
@@ -20,6 +21,7 @@ const DEFAULT_OPTIONS: Options = {
   host: 'https://hub.vemetric.com',
   trackPageViews: true,
   trackOutboundLinks: true,
+  trackDataAttributes: true,
   allowCookies: false,
   maskPaths: [],
 };
@@ -170,25 +172,26 @@ class Vemetric {
     if (this.options.trackOutboundLinks) {
       this.enableTrackOutboundLinks();
     }
-
-    this.enableDataAttributeTracking();
+    if (this.options.trackDataAttributes) {
+      this.enableTrackDataAttributes();
+    }
   }
 
-  private enableDataAttributeTracking() {
+  private enableTrackDataAttributes() {
     document.addEventListener('click', (event) => {
       const target = event.target;
       if (!(target instanceof HTMLElement) || !target.closest) {
-        return;
+        return true;
       }
 
       const element = target.closest(`[${DATA_ATTRIBUTE_EVENT}]`);
       if (!element) {
-        return;
+        return true;
       }
 
       const eventName = element.getAttribute(DATA_ATTRIBUTE_EVENT);
       if (!eventName) {
-        return;
+        return true;
       }
 
       // Collect custom data from other data attributes
@@ -205,6 +208,7 @@ class Vemetric {
       }
 
       this.trackEvent(eventName, { eventData: customData });
+      return true;
     });
   }
 
@@ -411,18 +415,19 @@ class Vemetric {
     document.addEventListener('click', (event) => {
       const target = event.target as HTMLElement;
       if (!target || target.tagName !== 'A') {
-        return;
+        return true;
       }
 
       const href = target.getAttribute('href');
       if (!href) {
-        return;
+        return true;
       }
 
       const url = new URL(href, getCurrentUrl());
       if (url.origin !== window.location.origin) {
         this.trackEvent('$$outboundLink', { eventData: { href }, beacon: true });
       }
+      return true;
     });
   }
 }

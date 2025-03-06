@@ -18,6 +18,19 @@ if (scriptElement) {
     options.allowCookies = allowCookies === 'true';
   }
 
+  const trackPageViews = scriptElement.getAttribute('data-track-page-views');
+  if (trackPageViews) {
+    options.trackPageViews = trackPageViews !== 'false';
+  }
+  const trackOutboundLinks = scriptElement.getAttribute('data-track-outbound-links');
+  if (trackOutboundLinks) {
+    options.trackOutboundLinks = trackOutboundLinks !== 'false';
+  }
+  const trackDataAttributes = scriptElement.getAttribute('data-track-data-attributes');
+  if (trackDataAttributes) {
+    options.trackDataAttributes = trackDataAttributes !== 'false';
+  }
+
   const maskPaths = scriptElement.getAttribute('data-mask-paths');
   if (maskPaths) {
     try {
