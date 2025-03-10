@@ -1,5 +1,24 @@
 import { vemetric, type Options } from './index';
 
+type VemetricMethod = keyof typeof vemetric;
+type QueueItem = [VemetricMethod, ...unknown[]];
+
+declare global {
+  interface Window {
+    vmtrcq?: QueueItem[];
+    vmtrc?: (...args: QueueItem) => void;
+    Vemetric?: typeof vemetric;
+  }
+}
+
+const executeMethod = (methodName: VemetricMethod, ...args: unknown[]) => {
+  const method = vemetric[methodName];
+  if (typeof method === 'function') {
+    // @ts-expect-error - Method binding complexity
+    method.apply(vemetric, args);
+  }
+};
+
 const scriptElement = document.currentScript as HTMLScriptElement;
 const options: Options = { token: '' };
 if (scriptElement) {
@@ -42,5 +61,14 @@ if (scriptElement) {
 }
 
 vemetric.init(options);
-// @ts-expect-error - Expose the vemetric function to the window object
 window.Vemetric = vemetric;
+window.vmtrc = (...queueItem: QueueItem) => {
+  const [methodName, ...args] = queueItem;
+  executeMethod(methodName, ...args);
+};
+
+// Process any existing queue items
+while (window.vmtrcq && window.vmtrcq.length > 0) {
+  const [methodName, ...args] = window.vmtrcq.shift()!;
+  executeMethod(methodName, ...args);
+}
