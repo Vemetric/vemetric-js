@@ -413,11 +413,12 @@ class Vemetric {
   enableTrackOutboundLinks() {
     document.addEventListener('click', (event) => {
       const target = event.target as HTMLElement;
-      if (!target || target.tagName !== 'A') {
+      if (!(target instanceof HTMLElement) || !target.closest) {
         return;
       }
 
-      const href = target.getAttribute('href');
+      const link = target.closest('a');
+      const href = link?.getAttribute('href');
       if (!href) {
         return;
       }
