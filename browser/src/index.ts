@@ -180,7 +180,7 @@ class Vemetric {
   private enableTrackDataAttributes() {
     document.addEventListener('click', (event) => {
       const target = event.target;
-      if (!(target instanceof HTMLElement) || !target.closest) {
+      if (!(target instanceof Element) || !target.closest) {
         return;
       }
 
@@ -412,8 +412,8 @@ class Vemetric {
 
   enableTrackOutboundLinks() {
     document.addEventListener('click', (event) => {
-      const target = event.target as HTMLElement;
-      if (!(target instanceof HTMLElement) || !target.closest) {
+      const target = event.target;
+      if (!(target instanceof Element) || !target.closest) {
         return;
       }
 
