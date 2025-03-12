@@ -61,7 +61,6 @@ if (scriptElement) {
 }
 
 vemetric.init(options);
-window.Vemetric = vemetric;
 window.vmtrc = (...queueItem: QueueItem) => {
   const [methodName, ...args] = queueItem;
   executeMethod(methodName, ...args);
