@@ -337,6 +337,10 @@ class Vemetric {
     }
   }
 
+  getUserIdentifier() {
+    return sessionStorage.getItem(KEY_IDENTIFIER);
+  }
+
   async identify({ identifier, displayName, data, allowCookies: _allowCookies }: IdentifyProps) {
     this.checkInitialized();
     if (this.isIdentifying) {

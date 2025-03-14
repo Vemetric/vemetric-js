@@ -15,7 +15,7 @@ const executeMethod = (methodName: VemetricMethod, ...args: unknown[]) => {
   const method = vemetric[methodName];
   if (typeof method === 'function') {
     // @ts-expect-error - Method binding complexity
-    method.apply(vemetric, args);
+    return method.apply(vemetric, args);
   }
 };
 
@@ -63,7 +63,7 @@ if (scriptElement) {
 vemetric.init(options);
 window.vmtrc = (...queueItem: QueueItem) => {
   const [methodName, ...args] = queueItem;
-  executeMethod(methodName, ...args);
+  return executeMethod(methodName, ...args);
 };
 
 // Process any existing queue items
